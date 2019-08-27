@@ -1,0 +1,5 @@
+models/pretrained/*
+*.ipynb
+*/__pycache__/*
+.idea/*
+logs/*
