@@ -201,6 +201,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     trainer = Trainer(args, device)
     trainer.do_training()
+    #torch.save({'state_dict': trainer.model.state_dict()}, 'trained_model.pth')
 
 
 if __name__ == "__main__":
