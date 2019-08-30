@@ -92,7 +92,7 @@ class JigsawDataset(data.Dataset):
     def get_image(self, index, permuted=False, styled=False):
         framename = self.data_path + '/' + self.names[index]
         if permuted == True:
-            if random() > 0.0: # each pile styled differently
+            if random() > 0.5: # each pile styled differently
                 img = self.get_permuted_image(framename)
             else: # piles have similar style
                 new_name = framename[:-4] + '_trans' + str(randint(0,4)) + framename[-4:]
