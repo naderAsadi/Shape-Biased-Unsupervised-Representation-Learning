@@ -198,6 +198,8 @@ class Trainer:
         return self.logger, self.model
 
     def test(self):
+        self.model.load_state_dict(torch.load(self.args.pretrained)['state_dict'])
+
         total = len(self.target_loader)
         jigsaw_correct, class_correct = self.do_test(self.target_loader)
         jigsaw_acc = float(jigsaw_correct) / total
