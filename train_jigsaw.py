@@ -36,6 +36,8 @@ def get_args():
     parser.add_argument("--n_classes", "-c", type=int, default=31, help="Number of classes")
     parser.add_argument("--jigsaw_n_classes", "-jc", type=int, default=31, help="Number of classes for the jigsaw task")
     parser.add_argument("--network", choices=model_factory.nets_map.keys(), help="Which network to use", default="caffenet")
+    parser.add_argument('--pretrained', type=str, help='Directory path to the pretrained model')
+    parser.add_argument('--save_name', type=str, default='saved_model.pth', help='Name for saving the model')
     parser.add_argument("--jig_weight", type=float, default=0.1, help="Weight for the jigsaw puzzle")
     parser.add_argument("--ooo_weight", type=float, default=0, help="Weight for odd one out task")
     parser.add_argument("--tf_logger", type=bool, default=True, help="If true will save tensorboard compatible logs")
@@ -195,13 +197,20 @@ class Trainer:
         self.logger.save_best(test_res[idx_best], test_res.max())
         return self.logger, self.model
 
+    def test(self):
+        total = len(self.target_loader)
+        jigsaw_correct, class_correct = self.do_test(self.target_loader)
+        jigsaw_acc = float(jigsaw_correct) / total
+        class_acc = float(class_correct) / total
+        print('Jigsaw ACC: {} - Class ACC: {}'.format(jigsaw_acc, class_acc))
+
 
 def main():
     args = get_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     trainer = Trainer(args, device)
     trainer.do_training()
-    #torch.save({'state_dict': trainer.model.state_dict()}, 'trained_model.pth')
+    torch.save({'state_dict': trainer.model.state_dict()}, args.save_name)
 
 
 if __name__ == "__main__":
