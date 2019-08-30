@@ -31,13 +31,15 @@ def get_args():
     parser.add_argument("--limit_source", default=None, type=int, help="If set, it will limit the number of training samples")
     parser.add_argument("--limit_target", default=None, type=int, help="If set, it will limit the number of testing samples")
 
+    parser.add_argument('--model_dir', type=str, default='saved_model.pth', help='Directory path to the pretrained model')
+    parser.add_argument('--save_name', type=str, default='saved_model.pth', help='Name for saving the model')
+    parser.add_argument('--test', action='store_true', help='Switch to test mode with pretrained model')
+
     parser.add_argument("--learning_rate", "-l", type=float, default=.01, help="Learning rate")
     parser.add_argument("--epochs", "-e", type=int, default=30, help="Number of epochs")
     parser.add_argument("--n_classes", "-c", type=int, default=31, help="Number of classes")
     parser.add_argument("--jigsaw_n_classes", "-jc", type=int, default=31, help="Number of classes for the jigsaw task")
     parser.add_argument("--network", choices=model_factory.nets_map.keys(), help="Which network to use", default="caffenet")
-    parser.add_argument('--pretrained', type=str, help='Directory path to the pretrained model')
-    parser.add_argument('--save_name', type=str, default='saved_model.pth', help='Name for saving the model')
     parser.add_argument("--jig_weight", type=float, default=0.1, help="Weight for the jigsaw puzzle")
     parser.add_argument("--ooo_weight", type=float, default=0, help="Weight for odd one out task")
     parser.add_argument("--tf_logger", type=bool, default=True, help="If true will save tensorboard compatible logs")
@@ -73,6 +75,7 @@ class Trainer:
         self.jig_weight = args.jig_weight
         self.only_non_scrambled = args.classify_only_sane
         self.n_classes = args.n_classes
+        self.best_acc = 0
         if args.target in args.source:
             self.target_id = args.source.index(args.target)
             print("Target in source: %d" % self.target_id)
@@ -148,6 +151,10 @@ class Trainer:
                 class_acc = float(class_correct) / total
                 self.logger.log_test(phase, {"jigsaw": jigsaw_acc, "class": class_acc})
                 self.results[phase][self.current_epoch] = class_acc
+        if class_acc > self.best_acc:
+            print('**** New Best Model Saved ****')
+            torch.save({'state_dict': self.model.state_dict()}, self.args.save_name)
+            self.best_acc = class_acc
 
     def do_test(self, loader):
         jigsaw_correct = 0
@@ -198,9 +205,9 @@ class Trainer:
         return self.logger, self.model
 
     def test(self):
-        self.model.load_state_dict(torch.load(self.args.pretrained)['state_dict'])
+        self.model.load_state_dict(torch.load(self.args.model_dir)['state_dict'])
 
-        total = len(self.target_loader)
+        total = len(self.target_loader.dataset)
         jigsaw_correct, class_correct = self.do_test(self.target_loader)
         jigsaw_acc = float(jigsaw_correct) / total
         class_acc = float(class_correct) / total
@@ -211,8 +218,10 @@ def main():
     args = get_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     trainer = Trainer(args, device)
-    trainer.do_training()
-    torch.save({'state_dict': trainer.model.state_dict()}, args.save_name)
+    if args.test:
+        trainer.test()
+    else:
+        trainer.do_training()
 
 
 if __name__ == "__main__":
