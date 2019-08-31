@@ -143,14 +143,12 @@ class Trainer:
             for phase, loader in self.test_loaders.items():
                 total = len(loader.dataset)
                 if loader.dataset.isMulti():
-                    print('Multi')
                     jigsaw_correct, class_correct, single_acc = self.do_test_multi(loader)
                     print("Single vs multi: %g %g" % (float(single_acc) / total, float(class_correct) / total))
                 else:
                     jigsaw_correct, class_correct = self.do_test(loader)
                 jigsaw_acc = float(jigsaw_correct) / total
                 class_acc = float(class_correct) / total
-                print('Total: {} - Class Acc: {}'.format(total, class_acc))
                 self.logger.log_test(phase, {"jigsaw": jigsaw_acc, "class": class_acc})
                 self.results[phase][self.current_epoch] = class_acc
         if class_acc > self.best_acc:
@@ -209,11 +207,14 @@ class Trainer:
     def test(self):
         self.model.load_state_dict(torch.load(self.args.model_dir)['state_dict'])
 
-        total = len(self.target_loader.dataset)
-        jigsaw_correct, class_correct = self.do_test(self.target_loader)
-        jigsaw_acc = float(jigsaw_correct) / total
-        class_acc = float(class_correct) / total
-        print('Jigsaw ACC: {} - Class ACC: {}'.format(jigsaw_acc, class_acc))
+        self.model.eval()
+        with torch.no_grad():
+            total = len(self.target_loader.dataset)
+            jigsaw_correct, class_correct = self.do_test(self.target_loader)
+            jigsaw_acc = float(jigsaw_correct) / total
+            class_acc = float(class_correct) / total
+            print(total)
+            print('Jigsaw ACC: {} - Class ACC: {}'.format(jigsaw_acc, class_acc))
 
 
 def main():

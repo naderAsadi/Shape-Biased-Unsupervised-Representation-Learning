@@ -65,8 +65,10 @@ class AlexNetCaffe(nn.Module):
         x = self.classifier(x)
         return self.jigsaw_classifier(x), self.class_classifier(x)#, self.domain_classifier(d)
 
-    # def encode(self, x):
-    #     x = self.features(x*57.6)
+    def encode(self, x):
+        x = self.features(x*57.6)
+        x = x.view(x.size(0), -1)
+        return x
 
 
 class Flatten(nn.Module):
