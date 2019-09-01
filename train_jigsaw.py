@@ -160,13 +160,29 @@ class Trainer:
         jigsaw_correct = 0
         class_correct = 0
         domain_correct = 0
+        encoded = []
+        labels = []
+        out = []
         for it, ((data, jig_l, class_l), _) in enumerate(loader):
             data, jig_l, class_l = data.to(self.device), jig_l.to(self.device), class_l.to(self.device)
             jigsaw_logit, class_logit = self.model(data)
             _, cls_pred = class_logit.max(dim=1)
             _, jig_pred = jigsaw_logit.max(dim=1)
+
+            #encode = self.model.encode2(data)
+            #encoded.append(encode)
+            #labels.append(class_l)
+            #out.append(cls_pred)            
+
             class_correct += torch.sum(cls_pred == class_l.data)
             jigsaw_correct += torch.sum(jig_pred == jig_l.data)
+        
+        #print(torch.cat(encoded, 0).shape)
+        #print(torch.cat(labels, 0).shape)
+        #print(torch.cat(out, 0).shape)
+        #torch.save(torch.cat(encoded, 0), 'data.pth')
+        #torch.save(torch.cat(labels, 0), 'label.pth')
+        
         return jigsaw_correct, class_correct
 
     def do_test_multi(self, loader):
@@ -215,6 +231,7 @@ class Trainer:
             class_acc = float(class_correct) / total
             print(total)
             print('Jigsaw ACC: {} - Class ACC: {}'.format(jigsaw_acc, class_acc))
+
 
 
 def main():

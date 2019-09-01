@@ -70,6 +70,12 @@ class AlexNetCaffe(nn.Module):
         x = x.view(x.size(0), -1)
         return x
 
+    def encode2(self, x):
+        x = self.features(x*57.6)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
+
 
 class Flatten(nn.Module):
     def forward(self, x):

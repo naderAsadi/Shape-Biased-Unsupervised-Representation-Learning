@@ -96,13 +96,13 @@ class JigsawDataset(data.Dataset):
                 img = self.get_permuted_image(framename)
             else: # piles have similar style
                 new_name = framename[:-4] + '_trans' + str(randint(0,4)) + framename[-4:]
-                img = Image.open(new_name).convert('RGB')
+                img = Image.open(new_name.replace('//', '/')).convert('RGB')
         else:
             if styled == True:
-                new_name = framename[:-4] + '_trans' + framename[-4:]
-                img = Image.open(new_name).convert('RGB')
+                new_name = framename[:-4] + '_trans' + str(randint(0,4))  + framename[-4:]
+                img = Image.open(new_name.replace('//', '/')).convert('RGB')
             else:
-                img = Image.open(framename).convert('RGB')
+                img = Image.open(framename.replace('//', '/')).convert('RGB')
         
         return self._image_transformer(img)
         
@@ -114,7 +114,7 @@ class JigsawDataset(data.Dataset):
             if self.bias_whole_image > random():
                 order = 0
         if order == 0: #return whole image
-            if random() > 1.0: # return styles
+            if random() > 0.5: # return styles
                 img = self.get_image(index, permuted=False, styled=True)
             else: # return normal
                 img = self.get_image(index, permuted=False, styled=False)
