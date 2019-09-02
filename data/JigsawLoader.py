@@ -134,18 +134,11 @@ class JigsawDataset(data.Dataset):
         data = torch.stack(data, 0)
         return self.returnFunc(data), int(order), int(self.labels[index])
 
-
-    def __len__(self):
-        return len(self.names)
-
-    def __retrieve_permutations(self, classes):
-        all_perm = np.load('permutations_%d.npy' % (classes))
-        # from range [1,9] to [0,8]
-        if all_perm.min() == 1:
-            all_perm = all_perm - 1
-
-        return all_perm
-
+    # def get_image(self, index):
+    #     framename = self.data_path + '/' + self.names[index]
+    #     img = Image.open(framename.replace('//', '/')).convert('RGB')
+    #     return self._image_transformer(img)
+        
     # def __getitem__(self, index):
     #     img = self.get_image(index)
     #     n_grids = self.grid_size ** 2
@@ -164,6 +157,18 @@ class JigsawDataset(data.Dataset):
             
     #     data = torch.stack(data, 0)
     #     return self.returnFunc(data), int(order), int(self.labels[index])
+
+
+    def __len__(self):
+        return len(self.names)
+
+    def __retrieve_permutations(self, classes):
+        all_perm = np.load('permutations_%d.npy' % (classes))
+        # from range [1,9] to [0,8]
+        if all_perm.min() == 1:
+            all_perm = all_perm - 1
+
+        return all_perm
 
     # def normalize(self, img):
     #     """
