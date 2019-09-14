@@ -80,7 +80,7 @@ class JigsawDataset(data.Dataset):
         n_grids = self.grid_size ** 2
         tiles = [None] * n_grids
         for i in range(9):
-            new_name = name[:-4] + '_' + str(i) + '_' + str(randint(0,2)) + name[-4:]
+            new_name = name[:-4] + '_' + str(i) + '_' + str(randint(0,4)) + name[-4:]
             img = Image.open(new_name.replace('//', '/')).convert('RGB')
             img = transforms.ToTensor()(img)
             tiles[i] = img
@@ -92,7 +92,7 @@ class JigsawDataset(data.Dataset):
     def get_image(self, index, permuted=False, styled=False):
         framename = self.data_path + '/' + self.names[index]
         if permuted == True: #and 'File_Clipart' not in framename and 'Calendar' not in framename and 'Bike' not in framename and 'Calculator' not in framename:
-            if random() > 0.5: # each pile styled differently
+            if random() > 1.0: # each pile styled differently
                 img = self.get_permuted_image(framename)
             else: # piles have similar style
                 new_name = framename[:-4] + '_trans' + str(randint(0,4)) + framename[-4:]
@@ -114,7 +114,7 @@ class JigsawDataset(data.Dataset):
             if self.bias_whole_image > random():
                 order = 0
         if order == 0: #return whole image
-            if random() > 1.0: # return styles (should not happen)
+            if random() > 0.5: # return styles (should not happen)
                 img = self.get_image(index, permuted=False, styled=True)
             else: # return normal
                 img = self.get_image(index, permuted=False, styled=False)
@@ -123,7 +123,7 @@ class JigsawDataset(data.Dataset):
             data = tiles
 
         else: #return Jigsaw
-            if random() > 0.25: # return styles piles
+            if random() > 0.5: # return styles piles
                 img = self.get_image(index, permuted=True, styled=True)
             else: # return normal piles
                 img = self.get_image(index, permuted=False, styled=False)
