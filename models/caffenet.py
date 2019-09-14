@@ -34,12 +34,12 @@ class AlexNetCaffe(nn.Module):
             ("fc6", nn.Linear(256 * 6 * 6, 4096)),
             ("relu6", nn.ReLU(inplace=True)),
             ("drop6", nn.Dropout() if dropout else Id()),
-            ("fc7", nn.Linear(4096, 128)),
+            ("fc7", nn.Linear(4096, 4096)),
             ("relu7", nn.ReLU(inplace=True)),
             ("drop7", nn.Dropout() if dropout else Id())]))
 
-        self.jigsaw_classifier = nn.Linear(128, jigsaw_classes)
-        self.class_classifier = nn.Linear(128, n_classes)
+        self.jigsaw_classifier = nn.Linear(4096, jigsaw_classes)
+        self.class_classifier = nn.Linear(4096, n_classes)
         # self.domain_classifier = nn.Sequential(
         #     nn.Linear(256 * 6 * 6, 1024),
         #     nn.ReLU(),

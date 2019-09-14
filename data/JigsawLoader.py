@@ -89,74 +89,74 @@ class JigsawDataset(data.Dataset):
         #print(tiles.shape)
         return transforms.ToPILImage()(tiles)
     
-    # def get_image(self, index, permuted=False, styled=False):
-    #     framename = self.data_path + '/' + self.names[index]
-    #     if permuted == True:
-    #         if random() > 0.5: # each pile styled differently
-    #             img = self.get_permuted_image(framename)
-    #         else: # piles have similar style
-    #             new_name = framename[:-4] + '_trans' + str(randint(0,4)) + framename[-4:]
-    #             img = Image.open(new_name.replace('//', '/')).convert('RGB')
-    #     else:
-    #         if styled == True:
-    #             new_name = framename[:-4] + '_trans' + str(randint(0,4))  + framename[-4:]
-    #             img = Image.open(new_name.replace('//', '/')).convert('RGB')
-    #         else:
-    #             img = Image.open(framename.replace('//', '/')).convert('RGB')
-        
-    #     return self._image_transformer(img)
-        
-    # def __getitem__(self, index):
-    #     n_grids = self.grid_size ** 2
-    #     tiles = [None] * n_grids
-    #     order = np.random.randint(len(self.permutations) + 1)  # added 1 for class 0: unsorted
-    #     if self.bias_whole_image:
-    #         if self.bias_whole_image > random():
-    #             order = 0
-    #     if order == 0: #return whole image
-    #         if random() > 1.0: # return styles (should not happen)
-    #             img = self.get_image(index, permuted=False, styled=True)
-    #         else: # return normal
-    #             img = self.get_image(index, permuted=False, styled=False)
-    #         for n in range(n_grids):
-    #             tiles[n] = self.get_tile(img, n)
-    #         data = tiles
-
-    #     else: #return Jigsaw
-    #         if random() > 0.5: # return styles piles
-    #             img = self.get_image(index, permuted=True, styled=True)
-    #         else: # return normal piles
-    #             img = self.get_image(index, permuted=False, styled=False)
-    #         for n in range(n_grids):
-    #             tiles[n] = self.get_tile(img, n)
-    #         data = [tiles[self.permutations[order - 1][t]] for t in range(n_grids)]
-
-    #     data = torch.stack(data, 0)
-    #     return self.returnFunc(data), int(order), int(self.labels[index])
-
-    def get_image(self, index):
+    def get_image(self, index, permuted=False, styled=False):
         framename = self.data_path + '/' + self.names[index]
-        img = Image.open(framename.replace('//', '/')).convert('RGB')
+        if permuted == True: #and 'File_Clipart' not in framename and 'Calendar' not in framename and 'Bike' not in framename and 'Calculator' not in framename:
+            if random() > 0.5: # each pile styled differently
+                img = self.get_permuted_image(framename)
+            else: # piles have similar style
+                new_name = framename[:-4] + '_trans' + str(randint(0,4)) + framename[-4:]
+                img = Image.open(new_name.replace('//', '/')).convert('RGB')
+        else:
+            if styled == True:# and 'File_Clipart' not in framename and 'Calendar' not in framename and 'Bike' not in framename and 'Calculator' not in framename:
+                new_name = framename[:-4] + '_trans' + str(randint(0,4))  + framename[-4:]
+                img = Image.open(new_name.replace('//', '/')).convert('RGB')
+            else:
+                img = Image.open(framename.replace('//', '/')).convert('RGB')
+        
         return self._image_transformer(img)
         
     def __getitem__(self, index):
-        img = self.get_image(index)
         n_grids = self.grid_size ** 2
         tiles = [None] * n_grids
-        for n in range(n_grids):
-            tiles[n] = self.get_tile(img, n)
-
         order = np.random.randint(len(self.permutations) + 1)  # added 1 for class 0: unsorted
         if self.bias_whole_image:
             if self.bias_whole_image > random():
                 order = 0
-        if order == 0:
+        if order == 0: #return whole image
+            if random() > 1.0: # return styles (should not happen)
+                img = self.get_image(index, permuted=False, styled=True)
+            else: # return normal
+                img = self.get_image(index, permuted=False, styled=False)
+            for n in range(n_grids):
+                tiles[n] = self.get_tile(img, n)
             data = tiles
-        else:
+
+        else: #return Jigsaw
+            if random() > 0.25: # return styles piles
+                img = self.get_image(index, permuted=True, styled=True)
+            else: # return normal piles
+                img = self.get_image(index, permuted=False, styled=False)
+            for n in range(n_grids):
+                tiles[n] = self.get_tile(img, n)
             data = [tiles[self.permutations[order - 1][t]] for t in range(n_grids)]
-            
+
         data = torch.stack(data, 0)
         return self.returnFunc(data), int(order), int(self.labels[index])
+
+    # def get_image(self, index):
+    #     framename = self.data_path + '/' + self.names[index]
+    #     img = Image.open(framename.replace('//', '/')).convert('RGB')
+    #     return self._image_transformer(img)
+        
+    # def __getitem__(self, index):
+    #     img = self.get_image(index)
+    #     n_grids = self.grid_size ** 2
+    #     tiles = [None] * n_grids
+    #     for n in range(n_grids):
+    #         tiles[n] = self.get_tile(img, n)
+
+    #     order = np.random.randint(len(self.permutations) + 1)  # added 1 for class 0: unsorted
+    #     if self.bias_whole_image:
+    #         if self.bias_whole_image > random():
+    #             order = 0
+    #     if order == 0:
+    #         data = tiles
+    #     else:
+    #         data = [tiles[self.permutations[order - 1][t]] for t in range(n_grids)]
+            
+    #     data = torch.stack(data, 0)
+    #     return self.returnFunc(data), int(order), int(self.labels[index])
 
 
     def __len__(self):
