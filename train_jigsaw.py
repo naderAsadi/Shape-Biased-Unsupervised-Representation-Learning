@@ -170,9 +170,9 @@ class Trainer:
             _, cls_pred = class_logit.max(dim=1)
             _, jig_pred = jigsaw_logit.max(dim=1)
 
-            #encode = self.model.encode2(data)
-            #encoded.append(encode[cls_pred == class_l.data])
-            #labels.append(class_l[cls_pred == class_l.data])
+            encode = self.model.encode2(data)
+            encoded.append(encode[cls_pred != class_l.data])
+            labels.append(class_l[cls_pred != class_l.data])
             #index.append(torch.tensor(it*self.args.batch_size , (it + 1)*self.args.batch_size)[cls_pred == class_l.data])
             #out.append(cls_pred)            
 
@@ -183,8 +183,8 @@ class Trainer:
         #print(torch.cat(labels, 0).shape)
         #print(torch.cat(index, 0).shape)
         ##print(torch.cat(out, 0).shape)
-        #torch.save(torch.cat(encoded, 0), 'data.pth')
-        #torch.save(torch.cat(labels, 0), 'label.pth')
+        torch.save(torch.cat(encoded, 0), 'data.pth')
+        torch.save(torch.cat(labels, 0), 'label.pth')
         #torch.save(torch.cat(index, 0), 'index.pth')
         
         return jigsaw_correct, class_correct
